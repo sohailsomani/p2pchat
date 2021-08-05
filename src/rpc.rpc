@@ -1,0 +1,28 @@
+struct ConnectRequest {
+  string handle = 1;
+  int fingerprint = 2;
+  string address = 3;
+}
+
+struct ConnectReply {
+  string handle = 1;
+  int fingerprint = 2;
+}
+
+struct MessageRequest {
+  string message = 1;
+  int fingerprint = 2;
+}
+
+struct MessageReply {
+  optional int ignored = 1;
+}
+
+struct HandleChangeRequest {
+  string handle = 1;
+  int fingerprint = 2;
+}
+
+struct HandleChangeReply {
+  optional int ignored = 1;
+}

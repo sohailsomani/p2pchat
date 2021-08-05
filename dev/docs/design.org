@@ -1,0 +1,87 @@
+* Basic sequence
+
+  #+begin_src plantuml :file sequence.png
+    @startuml
+    Alice -> Bob: connect(alice.fingerprint)
+    Bob -> Alice: accepted(bob.fingerprint)
+    Alice -> Bob: message("Hello, how are you?",msgid=date1)
+    Bob -> Alice: ack(date1)
+    Bob -> Alice: message("I am fine, how are you?",msgid=date2)
+    Alice -> Bob: ack(date2)
+    Alice -> Alice: disconnect()
+    Bob -> Alice: m = message("What are you up to?",msgid=date3)
+    ... no ack received ...
+    Bob -> Bob: queue(alice.fingerprint,m)
+    ... alice comes back online ...
+    Alice -> Bob: connect(alice.fingerprint)
+    Bob -> Alice: accepted(bob.fingerprint)
+    group for each message in Alice queue
+            Bob -> Alice: message(...)
+    end
+    @enduml
+  #+end_src
+
+  #+RESULTS:
+  [[file:sequence.png]]
+
+
+* Class diagram
+
+  #+begin_src plantuml :file class.png
+    @startuml
+    class ApplicationState {
+            {field} Map<fingerprint_t,Peer> chats
+            {method} run()
+    }
+
+    class Peer {
+            {field} fingerprint_t fingerprint
+            {field} Connection? connection
+            {field} Queue message_queue
+            {field} Set<msgid_t> awaiting_acks
+            {method} send(message)
+    }
+
+    ApplicationState -- Peer: > owns
+    @enduml
+  #+end_src
+
+  #+RESULTS:
+  [[file:class.png]]
+
+
+* Application run sequence
+
+  #+begin_src plantuml :file application_run.png
+    @startuml
+
+    main -> Application: run()
+    Application -> EventLoop: loop=create()
+    Application -> Server: create(loop,port=0)
+    Application -> EventLoop: run()
+    @enduml
+  #+end_src
+
+  #+RESULTS:
+  [[file:application_run.png]]
+
+
+* New incoming connection sequence
+
+  #+begin_src plantuml :file incoming_connection.png
+    @startuml
+
+    RemotePeer -> Application: connect(fingerprint)
+    Application -> Application: peer = get_peer(connection, fingerprint)
+    group if first time peer is connecting
+      Application -> Application: peer = make_peer(fingerprint)
+    end
+    Application -> Peer: set_connection(connection)
+    Application --> RemotePeer: send(fingerprint)
+
+    @enduml
+  #+end_src
+
+  #+RESULTS:
+  [[file:incoming_connection.png]]
+
